@@ -1,0 +1,3 @@
+a simple web service to generate stub linked data api configuration from
+a VoID dataset description.
+
