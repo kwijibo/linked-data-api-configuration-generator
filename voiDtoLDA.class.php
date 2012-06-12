@@ -10,8 +10,6 @@ define('VOID_EXAMPLE', VOID_NS.'exampleResource');
 define('VOID_CLASS_PARTITION', VOID_NS.'classPartition');
 define('API','http://purl.org/linked-data/api/vocab#' );
 
-define('KASABI_APIKEY','d2accb7a212917681eb0eb5cbf8f1245a5f636f7' );
-
 #set_include_path(get_include_path().':/Users/keith/dev/');
 
 require 'moriarty/moriarty.inc.php';
