@@ -7,8 +7,12 @@ define('MORIARTY_HTTP_CACHE_DIR', 'cache');
 define('VOID_NS', 'http://rdfs.org/ns/void#');
 define('VOID_SPARQL', VOID_NS.'sparqlEndpoint');
 define('VOID_EXAMPLE', VOID_NS.'exampleResource');
+define('VOID_CLASS_PARTITION', VOID_NS.'classPartition');
 define('API','http://purl.org/linked-data/api/vocab#' );
-set_include_path(get_include_path().':/Users/keith/dev/');
+
+define('KASABI_APIKEY','d2accb7a212917681eb0eb5cbf8f1245a5f636f7' );
+
+#set_include_path(get_include_path().':/Users/keith/dev/');
 
 require 'moriarty/moriarty.inc.php';
 require 'moriarty/sparqlservice.class.php';
@@ -19,6 +23,7 @@ function logMessage($m){
   $msg = "{$date}\t{$m}\n";
   file_put_contents('log.txt', $msg, FILE_APPEND);
 }
+
 
 
 class voiDtoLDA extends SimpleGraph {
@@ -77,6 +82,8 @@ class voiDtoLDA extends SimpleGraph {
 	#
 	public function getVoiDGraph(){
     $this->voiD->read_data($this->voidUri);
+    #logMessage(print_r($this->voiD, true));
+
     /*
 		$query = "DESCRIBE <{$this->voidUri}> ?example { <{$this->voidUri}> <http://rdfs.org/ns/void#exampleResource> ?example .  }";
 		$response = $this->sparql->graph($query);		
@@ -113,8 +120,26 @@ class voiDtoLDA extends SimpleGraph {
 	#
 	#
 	public function makeItemEndpoints(){
+
+    logMessage("Adding Void Examples from Class Partitions");
+    # from classPartitions
+    foreach($this->voiD->get_resource_triple_values($this->voidUri, VOID_CLASS_PARTITION) as $classPartition){
+      logMessage("Fetching Class Partition: {$classPartition}");
+      
+      $class = $this->voiD->get_resource_triple_values($classPartition, VOID_NS.'class');
+      $classExample = $this->sparql->select_to_array("SELECT ?s where { ?s a <{$class[0]}>} LIMIT 1");
+      
+      $this->voiD->add_resource_triple($this->voidUri, VOID_EXAMPLE, $classExample[0][s][value]);
+      logMessage(print_r($classExample, true));
+
+
+
+    }
+
+
     logMessage("Making Item Endpoints");
-		$no = 1;
+    $no = 1;
+
 		foreach($this->voiD->get_resource_triple_values($this->voidUri, VOID_EXAMPLE) as $exampleUri){
       logMessage("Fetching Example: {$exampleUri}");
       $this->voiD->read_data($exampleUri);
@@ -134,7 +159,9 @@ class voiDtoLDA extends SimpleGraph {
 
       logMessage("Added Endpoint definition to graph");
 				
-		}
+    }
+
+
   }
 
   function getExampleProperties(){
